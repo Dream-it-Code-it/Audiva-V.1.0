@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Audiva Elite — Offline Audio Scheduler</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="manifest" href="manifest.json" />
+<style>
+  :root{
+    --bg:#eaf3ff;
+    --card:#ffffff;
+    --ink:#003366;
+    --ink-soft:#5b7aa6;
+    --accent:#0b61ff;
+    --accent-2:#5aa0ff;
+    --muted:#f4f7ff;
+    --border:#d8e6ff;
+    --success:#11a66a;
+    --warning:#f59e0b;
+    --danger:#ef4444;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Playfair Display",system-ui,-apple-system,segoe ui,roboto,helvetica neue,arial,sans-serif;
+  }
+  header{
+    background: linear-gradient(135deg, var(--ink), #0a3a7a 60%, #052244);
+    color:#fff; padding:16px 20px; position:sticky; top:0; z-index:5;
+    box-shadow:0 10px 35px rgba(0,0,0,.15);
+  }
+  .hdr-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .brand{font-weight:800; font-size:1.35rem; letter-spacing:.5px; display:flex; align-items:center; gap:.6rem}
+  .brand-badge{
+    width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
+    background:linear-gradient(135deg,#2ea1ff,#00d1ff); color:#002244; font-weight:900
+  }
+  .hdr-actions{display:flex;align-items:center;gap:10px}
+  .btn{
+    appearance:none;border:0;border-radius:12px; padding:10px 14px; font-weight:600; cursor:pointer;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));
+    color:#fff; box-shadow:0 8px 24px rgba(11,97,255,.25); transition:.2s transform, .2s box-shadow;
+  }
+  .btn:hover{transform:translateY(-1px); box-shadow:0 10px 30px rgba(11,97,255,.3)}
+  .btn.secondary{background:#0d3566;color:#cfe2ff;box-shadow:none}
+  .btn.small{padding:6px 10px; border-radius:10px; font-weight:700; font-size:.88rem}
+  .btn.ghost{background:#f1f6ff; color:#0d3566; box-shadow:none}
+  .btn.danger{background:linear-gradient(135deg,#ff5b73,#f43f5e)}
+  .clock{font-variant-numeric:tabular-nums; font-weight:700; opacity:.9}
+  main{
+    display:grid; grid-template-columns:1.1fr .9fr; gap:18px; padding:18px; max-width:1200px; margin:0 auto
+  }
+  section{
+    background:var(--card); border:1px solid var(--border);
+    border-radius:18px; padding:16px; box-shadow:0 10px 30px rgba(15,60,130,.06);
+  }
+  h2{margin:0 0 10px; font-size:1.2rem}
+  .uploader{display:grid; gap:14px}
+  .drop{
+    border:1.5px dashed #9ec2ff; border-radius:16px; background:linear-gradient(180deg,#f6f9ff, #eef5ff);
+    padding:18px; display:flex; align-items:center; gap:14px; cursor:pointer;
+    transition:.2s border-color, .2s background;
+  }
+  .drop:hover{border-color:var(--accent); background:#f4f8ff}
+  .drop-ico{
+    width:44px;height:44px;border-radius:12px;display:grid;place-items:center;
+    background:linear-gradient(135deg,#77b6ff,#a8d1ff); color:#003; font-weight:900
+  }
+  .drop small{color:var(--ink-soft)}
+  .hidden-input{display:none}
+  .row{display:grid; grid-template-columns:1fr 1fr auto; gap:10px}
+  .field{
+    position:relative; background:var(--muted); border:1px solid var(--border);
+    border-radius:12px; padding:10px 12px 8px 40px;
+  }
+  .field input, .field select{
+    width:100%; outline:2px; border:0; background:transparent; color:var(--ink); font-size:0.95rem;
+  }
+  .field label{
+    position:absolute; top:-1px; left:12px; font-size:.72rem; color:#6d8db8; font-weight:700; letter-spacing:.02em;
+  }
+  .field .icon{
+    position:absolute; left:12px; top:50%; transform:translateY(-2px); opacity:.6
+  }
+  .chipbar{display:flex; gap:8px; flex-wrap:wrap}
+  .chip{
+    background:#edf4ff; color:#0d3566; border:1px solid #cfe0ff;
+    padding:6px 10px; border-radius:999px; font-size:.8rem; cursor:pointer; font-weight:600;
+  }
+  .chip:hover{background:#e5f0ff}
+  .cards{margin-top:12px; display:grid; gap:10px}
+  .card{
+    border:1px solid var(--border); background:linear-gradient(180deg,#ffffff, #f8fbff);
+    border-radius:14px; padding:12px; display:grid; gap:8px;
+  }
+  .card-head{display:flex; justify-content:space-between; align-items:center; gap:8px}
+  .title{font-weight:800}
+  .meta{color:var(--ink-soft); font-size:.86rem}
+  .actions{display:flex; gap:8px}
+  .pill{
+    font-weight:800; font-size:.7rem; padding:4px 8px; border-radius:999px;
+    background:#eff6ff; color:#0b3a7a; border:1px solid #cfe0ff
+  }
+  .countdown{font-variant-numeric:tabular-nums; color:#204b86}
+  .dash-card{border-left:6px solid #dbeafe}
+  .dash-card.playing{border-left-color:var(--success)}
+  .dash-card.upcoming{border-left-color:var(--warning)}
+  .dash-controls{display:flex; gap:8px; margin-top:6px}
+  .toast{
+    position:fixed; right:18px; bottom:18px; background:#0d3566; color:#e7f0ff; padding:12px 14px;
+    border-radius:12px; box-shadow:0 16px 40px rgba(0,0,0,.25); z-index:20; display:none
+  }
+  .toast.show{display:block}
+  @media (max-width: 980px){ main{grid-template-columns:1fr} }
+  body.dark-mode {
+    background: #181f2a;
+    color: #eaf3ff;
+  }
+  body.dark-mode section {
+    background: #232b3a;
+    border-color: #33405a;
+  }
+  body.dark-mode .btn {
+    background: linear-gradient(135deg,#222e3f,#0b61ff);
+    color: #eaf3ff;
+  }
+  body.dark-mode .card {
+    background: linear-gradient(180deg,#232b3a,#181f2a);
+    border-color: #33405a;
+  }
+  body.blue-mode { background:#e0f7fa;color:#01579b; }
+  body.blue-mode section { background:#b3e5fc;border-color:#0288d1; }
+  body.blue-mode .btn { background:linear-gradient(135deg,#0288d1,#00bcd4);color:#fff; }
+  body.blue-mode .card { background:linear-gradient(180deg,#b3e5fc,#e0f7fa);border-color:#0288d1; }
+  /* Hamburger menu styles */
+  .menu-btn {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: #fff;
+    cursor: pointer;
+    margin-right: 10px;
+  }
+  #sideMenu {
+    position: fixed;
+    top: 0; left: -280px;
+    width: 280px; height: 100vh;
+    background: #fff;
+    color: #222;
+    box-shadow: 2px 0 20px rgba(0,0,0,0.15);
+    z-index: 200;
+    transition: left 0.3s;
+    display: flex; flex-direction: column;
+    padding: 24px 18px 18px 18px;
+  }
+  #sideMenu.open { left: 0; }
+  #sideMenu .close-btn {
+    background: none; border: none; font-size: 1.5rem; color: #222; cursor: pointer; align-self: flex-end;
+  }
+  #sideMenu h3 { margin-top: 0; }
+  #sideMenu label, #sideMenu select, #sideMenu button, #sideMenu input[type="checkbox"] {
+    margin-bottom: 12px; display: block;
+  }
+  #sideMenu button, #sideMenu select {
+    width: 100%;
+  }
+  #sideMenu ul { padding-left: 18px; }
+  #sideMenu .divider { border-bottom: 1px solid #eee; margin: 12px 0; }
+  @media (max-width: 600px) {
+    #sideMenu { width: 90vw; }
+  }
+</style>
+</head>
+<body>
+  <header>
+    <div class="hdr-row">
+      <button class="menu-btn" onclick="toggleMenu()" aria-label="Open menu">&#9776;</button>
+      <div class="brand">
+        <div class="brand-badge" aria-hidden="true">Audiva</div>
+      </div>
+      <div class="hdr-actions">
+        <button class="btn secondary" onclick="goHome()" aria-label="Go back to Home">⬅ Back</button>
+        <div id="clock" class="clock" aria-live="polite">--:--:--</div>
+        <button class="btn secondary" onclick="openAGI()" aria-label="Open AGI View">AI</button>
+        <button class="btn secondary" onclick="toggleDarkMode()" aria-label="Toggle Dark Mode" id="darkModeBtn">🌙</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Side Menu -->
+  <nav id="sideMenu" aria-label="Main menu" tabindex="-1" aria-hidden="true">
+    <button class="close-btn" onclick="toggleMenu()" aria-label="Close menu">&times;</button>
+    <h3>Menu</h3>
+    <label for="langSelect">Language</label>
+    <select id="langSelect" onchange="setLang(this.value)">
+      <option value="en">EN</option>
+      <option value="es">ES</option>
+    </select>
+    <label for="themeSelect">Theme</label>
+    <select id="themeSelect" onchange="setTheme(this.value)">
+      <option value="default">Default</option>
+      <option value="dark">Dark</option>
+      <option value="blue">Blue</option>
+    </select>
+    <button class="btn small" onclick="showHelp()" aria-label="Help">Help & FAQ</button>
+    <div class="divider"></div>
+    <button class="btn small" onclick="exportLibrary()" aria-label="Export Library">⬇ Export Library</button>
+    <input type="file" id="importInput" class="hidden-input" accept=".json" onchange="importLibrary(event)" />
+    <button class="btn small" onclick="document.getElementById('importInput').click()" aria-label="Import Library">⬆ Import Library</button>
+    <div class="divider"></div>
+    <button class="btn small" onclick="loginStub()" aria-label="Login">Login</button>
+    <div class="divider"></div>
+    <div id="sortBar">
+      <label>Sort: 
+        <select id="sortSelect" onchange="setSort(this.value)">
+          <option value="date">Date</option>
+          <option value="group">Group</option>
+          <option value="status">Status</option>
+        </select>
+      </label>
+      <label>
+        <input type="checkbox" id="showPlayed" onchange="renderLibrary()"> Show played
+      </label>
+    </div>
+  </nav>
+
+  <main>
+    <section aria-label="Upload and Schedule">
+      <h2>📥 Upload & Schedule</h2>
+      <div class="uploader">
+        <div class="drop" id="dropZone" onclick="fileInput.click()" role="button" tabindex="0" aria-label="Upload audio files">
+          <div class="drop-ico">↑</div>
+          <div>
+            <div style="font-weight:800">Drag & drop your audio here</div>
+            <small>or click to browse — MP3 / WAV / M4A, up to 150 MB each</small>
+          </div>
+          <input id="fileInput" class="hidden-input" type="file" accept="audio/*" multiple />
+        </div>
+        <div class="row">
+          <div class="field">
+            <label for="groupInput">Group</label>
+            <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4Zm0 2c-3.33 0-6 1.34-6 3v2h12v-2c0-1.66-2.67-3-6-3Z" fill="#1e3a8a"/></svg>
+            <input id="groupInput" type="text" placeholder="e.g., Morning Playlist" />
+          </div>
+          <div class="field">
+            <label for="dateInput">Schedule (local time)</label>
+            <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 2v2H5a2 2 0 0 0-2 2v2h18V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7Zm14 8H3v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V10Zm-6 4h-4v4h2v-2h2v-2Z" fill="#1e3a8a"/></svg>
+            <input id="dateInput" type="datetime-local" />
+          </div>
+          <div>
+            <button class="btn small" onclick="scheduleUnscheduled()">Schedule</button>
+          </div>
+        </div>
+        <div class="chipbar">
+          <span class="chip" onclick="quickAdd(1)" role="button" tabindex="0">+1 min</span>
+          <span class="chip" onclick="quickAdd(5)" role="button" tabindex="0">+5 min</span>
+          <span class="chip" onclick="quickAdd(10)" role="button" tabindex="0">+10 min</span>
+          <span class="chip" onclick="applyGroup('Default')" role="button" tabindex="0">Default</span>
+        </div>
+      </div>
+      <br />
+      <div class="row" style="grid-template-columns:1fr 1fr">
+        <div class="field">
+          <label for="searchInput">Search</label>
+          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m21 21-4.3-4.3M10 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" stroke="#1e3a8a" stroke-width="2" stroke-linecap="round"/></svg>
+          <input id="searchInput" type="text" placeholder="Search group or file..." oninput="filterLibrary()" aria-label="Search by group or file" />
+        </div>
+        <div class="field">
+          <label for="groupFilter">Group Filter</label>
+          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 5h18v2l-7 7v4l-4 2v-6L3 7V5Z" fill="#1e3a8a"/></svg>
+          <select id="groupFilter" onchange="filterLibrary()" aria-label="Filter by group">
+            <option value="">All groups</option>
+          </select>
+        </div>
+      </div>
+      <div class="cards" id="library" aria-live="polite" tabindex="0"></div>
+    </section>
+    <section aria-label="Dashboard">
+      <h2>📊 Now Playing & Scheduled</h2>
+      <div class="cards" id="dashboard" aria-live="polite" tabindex="0"></div>
+    </section>
+  </main>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <div id="helpModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,.5);z-index:100;align-items:center;justify-content:center;">
+    <div style="background:#fff;color:#222;padding:2em;border-radius:1em;max-width:500px;position:relative;">
+      <button onclick="hideHelp()" style="position:absolute;top:10px;right:10px;">✖</button>
+      <h2>Help & FAQ</h2>
+      <ul>
+        <li>Upload audio files (MP3/WAV/M4A) and schedule playback.</li>
+        <li>Use Export/Import to backup or restore your library.</li>
+        <li>Preview audio before scheduling.</li>
+        <li>Set repeat schedules for daily/weekly playback.</li>
+        <li>Enable browser notifications for reminders.</li>
+        <li>Change language and theme from the menu.</li>
+        <li>Advanced features (login/cloud sync) require backend.</li>
+      </ul>
+    </div>
+  </div>
+  <script>
+    // Hamburger menu logic
+    function toggleMenu() {
+      const menu = document.getElementById('sideMenu');
+      menu.classList.toggle('open');
+      if(menu.classList.contains('open')) {
+        menu.setAttribute('aria-hidden','false');
+        menu.focus();
+      } else {
+        menu.setAttribute('aria-hidden','true');
+      }
+    }
+    // ================== Multi-language (simple demo) ==================
+    const LANGS = {
+      en: {
+        appTitle: "Audiva Elite — Offline Scheduler",
+        help: "Help & FAQ",
+        upload: "Upload & Schedule",
+        dashboard: "Now Playing & Scheduled",
+        export: "Export Library",
+        import: "Import Library",
+        preview: "Preview",
+        repeat: "Repeat",
+        daily: "Daily",
+        weekly: "Weekly"
+      },
+      es: {
+        appTitle: "Audiva Elite — Programador Offline",
+        help: "Ayuda & FAQ",
+        upload: "Subir & Programar",
+        dashboard: "Reproduciendo & Programados",
+        export: "Exportar Biblioteca",
+        import: "Importar Biblioteca",
+        preview: "Previsualizar",
+        repeat: "Repetir",
+        daily: "Diario",
+        weekly: "Semanal"
+      }
+    };
+    function setLang(lang) {
+      localStorage.setItem('lang', lang);
+      document.querySelector('h2').textContent = "📥 " + LANGS[lang].upload;
+      document.querySelectorAll('h2')[1].textContent = "📊 " + LANGS[lang].dashboard;
+      document.querySelector('button[aria-label="Help"]').textContent = LANGS[lang].help;
+      document.querySelector('button[aria-label="Export Library"]').textContent = LANGS[lang].export;
+      document.querySelector('button[aria-label="Import Library"]').textContent = LANGS[lang].import;
+    }
+    setLang(localStorage.getItem('lang') || 'en');
+
+    // ================== Custom Themes ==================
+    function setTheme(theme) {
+      document.body.classList.remove('dark-mode','blue-mode');
+      if(theme==='dark') document.body.classList.add('dark-mode');
+      if(theme==='blue') document.body.classList.add('blue-mode');
+      localStorage.setItem('theme', theme);
+    }
+    if(localStorage.getItem('theme')) setTheme(localStorage.getItem('theme'));
+
+    // ================== Help Modal ==================
+    function showHelp() { document.getElementById('helpModal').style.display='flex'; }
+    function hideHelp() { document.getElementById('helpModal').style.display='none'; }
+
+    // ================== Export/Import Library ==================
+    function exportLibrary() {
+      const data = JSON.stringify(items);
+      const blob = new Blob([data],{type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'audiva-library.json';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+    function importLibrary(e) {
+      const file = e.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = function() {
+        try {
+          const imported = JSON.parse(reader.result);
+          if(Array.isArray(imported)) {
+            imported.forEach(item => { items.push(item); saveItem(item); });
+            toast('Library imported');
+            renderEverything();
+          } else toast('Invalid import file');
+        } catch { toast('Import error'); }
+      };
+      reader.readAsText(file);
+    }
+
+    // ================== Audio Preview ==================
+    function previewAudio(id) {
+      const it = items.find(x=>x.id===id);
+      if(!it) return;
+      const url = URL.createObjectURL(it.blob);
+      const audio = new Audio(url);
+      audio.play();
+      toast('Previewing: ' + escapeHTML(it.fileName));
+      audio.onended = ()=>URL.revokeObjectURL(url);
+    }
+
+    // ================== Repeat Scheduling ==================
+    function openEdit(id){
+      const it = items.find(x=>x.id===id); if(!it) return;
+      const newGroup = prompt('Group name:', it.group || '');
+      if(newGroup===null) return;
+      const newTime = prompt('Datetime (YYYY-MM-DDTHH:MM):', it.scheduledTime || toLocalDateTime(new Date()));
+      if(!newTime) return;
+      const repeat = prompt('Repeat: none/daily/weekly', it.repeat || 'none');
+      it.group = escapeHTML(newGroup.trim() || 'Default');
+      it.scheduledTime = newTime;
+      it.repeat = repeat;
+      it.played = false;
+      saveItem(it);
+      toast('Updated');
+      renderEverything();
+    }
+    setInterval(()=>{
+      const now = Date.now();
+      items.forEach(it=>{
+        if(it.scheduledTime && !it.played && !activePlayers[it.id]){
+          const tgt = new Date(it.scheduledTime).getTime();
+          if(now >= tgt && now - tgt < 1500){
+            playAudio(it);
+            if(it.repeat==='daily') it.scheduledTime = toLocalDateTime(new Date(tgt+86400000));
+            if(it.repeat==='weekly') it.scheduledTime = toLocalDateTime(new Date(tgt+604800000));
+            saveItem(it);
+          }
+        }
+      });
+    }, 500);
+
+    // ================== Notifications ==================
+    if("Notification" in window && Notification.permission !== "granted") {
+      Notification.requestPermission();
+    }
+    function notify(msg) {
+      if("Notification" in window && Notification.permission === "granted") {
+        new Notification(msg);
+      }
+    }
+    setInterval(()=>{
+      const now = Date.now();
+      items.forEach(it=>{
+        if(it.scheduledTime && !it.played){
+          const tgt = new Date(it.scheduledTime).getTime();
+          if(tgt-now<60000 && tgt-now>59000) notify('Audio "'+it.fileName+'" will play in 1 minute');
+        }
+      });
+    }, 10000);
+
+    // ================== Accessibility Improvements ==================
+    document.getElementById('searchInput').setAttribute('aria-label','Search by group or file');
+    document.getElementById('groupFilter').setAttribute('aria-label','Filter by group');
+    document.getElementById('library').setAttribute('tabindex','0');
+    document.getElementById('dashboard').setAttribute('tabindex','0');
+
+    // ================== Sorting and Advanced Filtering ==================
+    let sortBy = 'date';
+    function setSort(val) { sortBy = val; renderLibrary(); }
+    function getStatus(it) {
+      if(activePlayers[it.id]) return 'playing';
+      if(it.played) return 'finished';
+      return 'upcoming';
+    }
+
+    function renderLibrary(){
+      library.innerHTML = '';
+      let arr = items.slice();
+      if(!document.getElementById('showPlayed').checked) arr = arr.filter(it=>!it.played);
+      if(sortBy==='date') arr.sort((a,b)=>b.createdAt - a.createdAt);
+      if(sortBy==='group') arr.sort((a,b)=>(a.group||'').localeCompare(b.group||''));
+      if(sortBy==='status') arr.sort((a,b)=>getStatus(a).localeCompare(getStatus(b)));
+      arr.forEach(renderLibraryCard);
+      filterLibrary();
+    }
+    function renderLibraryCard(it){
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.id = 'lib-' + it.id;
+      card.dataset.group = (it.group||'').toLowerCase();
+      card.dataset.name = (it.fileName||'').toLowerCase();
+      const sch = it.scheduledTime ? new Date(it.scheduledTime) : null;
+      let duration = '';
+      if(it.blob){
+        const url = URL.createObjectURL(it.blob);
+        const audio = document.createElement('audio');
+        audio.src = url;
+        audio.onloadedmetadata = function(){
+          duration = Math.round(audio.duration) + 's';
+          card.querySelector('.meta-duration').textContent = 'Duration: ' + duration;
+          URL.revokeObjectURL(url);
+        };
+      }
+      card.innerHTML = `
+        <div class="card-head">
+          <div>
+            <div class="title">${escapeHTML(it.fileName)}</div>
+            <div class="meta">Group: <span class="pill">${escapeHTML(it.group) || '—'}</span></div>
+            <div class="meta meta-duration">Duration: ${duration}</div>
+            <div class="meta">Repeat: <span class="pill">${it.repeat||'none'}</span></div>
+          </div>
+          <div class="actions">
+            <button class="btn small ghost" onclick="openEdit(${it.id})">Edit</button>
+            <button class="btn small danger" onclick="removeItem(${it.id})">Delete</button>
+            <button class="btn small" onclick="previewAudio(${it.id})">Preview</button>
+          </div>
+        </div>
+        <div class="meta">Scheduled: ${sch ? sch.toLocaleString() : 'Not set'}</div>
+        <div class="countdown" id="cd-lib-${it.id}">—</div>
+      `;
+      library.appendChild(card);
+    }
+
+    function loginStub() {
+      toast('Login feature requires backend integration.');
+    }
+    function cloudSyncStub() {
+      toast('Cloud sync requires backend integration.');
+    }
+
+    const clockEl = document.getElementById('clock');
+    setInterval(()=>{ clockEl.textContent = new Date().toLocaleTimeString(); }, 1000);
+
+    let db, items = [], activePlayers = {};
+    const DB_NAME="audivaDB_elite", STORE="files";
+    const openReq = indexedDB.open(DB_NAME, 2);
+    openReq.onupgradeneeded = e => {
+      db = e.target.result;
+      if(!db.objectStoreNames.contains(STORE)){
+        db.createObjectStore(STORE, { keyPath: 'id' });
+      }
+    };
+    openReq.onsuccess = e => { db = e.target.result; loadAll(); };
+    openReq.onerror = e => { toast('Database error'); };
+
+    function saveItem(item){
+      try {
+        const tx = db.transaction(STORE, 'readwrite');
+        tx.objectStore(STORE).put(item);
+      } catch (e) { toast('Save error'); }
+    }
+    function deleteItem(id){
+      try {
+        const tx = db.transaction(STORE, 'readwrite');
+        tx.objectStore(STORE).delete(id);
+      } catch (e) { toast('Delete error'); }
+    }
+    function loadAll(){
+      try {
+        const tx = db.transaction(STORE, 'readonly');
+        tx.objectStore(STORE).getAll().onsuccess = e => {
+          items = e.target.result || [];
+          renderEverything();
+        };
+      } catch (e) { toast('Load error'); }
+    }
+
+    function escapeHTML(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function isValidAudioFile(file) {
+      const allowedExt = ['mp3', 'wav', 'm4a'];
+      const ext = file.name.split('.').pop().toLowerCase();
+      return file.type.startsWith('audio/') && allowedExt.includes(ext);
+    }
+
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    dropZone.addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); }
+    });
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.style.borderColor = 'var(--accent)'; });
+    dropZone.addEventListener('dragleave', ()=> dropZone.style.borderColor = '#9ec2ff');
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault(); dropZone.style.borderColor = '#9ec2ff';
+      handleFiles(e.dataTransfer.files);
+    });
+    fileInput.addEventListener('change', ()=> handleFiles(fileInput.files));
+
+    function handleFiles(fileList){
+      [...fileList].forEach(f=>{
+        if(!isValidAudioFile(f)){ toast('Only MP3, WAV, or M4A audio files allowed'); return; }
+        if(f.size/1024/1024 > 150){ toast('File exceeds 150 MB'); return; }
+        const reader = new FileReader();
+        reader.onload = ()=>{
+          const id = Date.now() + Math.random();
+          const item = {
+            id, fileName: escapeHTML(f.name), blob: new Blob([reader.result]),
+            group: '', scheduledTime: null, played:false, createdAt: Date.now()
+          };
+          items.push(item); saveItem(item);
+          renderLibraryCard(item); refreshGroups();
+          toast('File added');
+        };
+        reader.onerror = ()=>{ toast('File read error'); };
+        reader.readAsArrayBuffer(f);
+      });
+    }
+
+    const dateInput = document.getElementById('dateInput');
+    const groupInput = document.getElementById('groupInput');
+    function quickAdd(mins){
+      const t = new Date(Date.now() + mins*60000);
+      dateInput.value = toLocalDateTime(t);
+    }
+    function applyGroup(name){ groupInput.value = name; }
+    function toLocalDateTime(d){
+      const pad=n=>String(n).padStart(2,'0');
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function scheduleUnscheduled(){
+      const when = dateInput.value;
+      const group = (groupInput.value || 'Default').trim();
+      if(!when){ toast('Pick a date/time'); return; }
+      let changed = 0;
+      items.forEach(it=>{
+        if(!it.scheduledTime){
+          it.scheduledTime = when; it.group = escapeHTML(group); it.played = false;
+          saveItem(it); changed++;
+        }
+      });
+      if(changed===0){ toast('No unscheduled files to schedule'); }
+      else { toast(`Scheduled ${changed} file(s)`); }
+      renderEverything();
+    }
+
+    function removeItem(id){
+      if(!confirm('Are you sure you want to delete this file?')) return;
+      if(activePlayers[id]){ try{ activePlayers[id].pause(); }catch{} delete activePlayers[id]; }
+      items = items.filter(x=>x.id!==id);
+      deleteItem(id);
+      toast('Deleted');
+      renderEverything();
+    }
+
+    const library = document.getElementById('library');
+    const groupFilter = document.getElementById('groupFilter');
+    const searchInput = document.getElementById('searchInput');
+    function renderEverything(){
+      renderLibrary();
+      renderDashboard();
+      refreshGroups();
+    }
+    function filterLibrary(){
+      const q = searchInput.value.trim().toLowerCase();
+      const gf = (groupFilter.value || '').toLowerCase();
+      [...library.children].forEach(el=>{
+        const g = el.dataset.group, n = el.dataset.name;
+        const matchGroup = !gf || g===gf;
+        const matchText = !q || g.includes(q) || n.includes(q);
+        el.style.display = (matchGroup && matchText) ? '' : 'none';
+      });
+    }
+    function refreshGroups(){
+      const groups = [...new Set(items.map(i=>i.group).filter(Boolean))].sort();
+      const val = groupFilter.value;
+      groupFilter.innerHTML = `<option value="">All groups</option>`;
+      groups.forEach(g=>{
+        const opt = document.createElement('option');
+        opt.value = g; opt.textContent = g;
+        groupFilter.appendChild(opt);
+      });
+      groupFilter.value = val || '';
+    }
+
+    const dashboard = document.getElementById('dashboard');
+    function renderDashboard(){
+      dashboard.innerHTML='';
+      const sorted = items.slice().sort((a,b)=>{
+        const at = a.scheduledTime?new Date(a.scheduledTime).getTime():Infinity;
+        const bt = b.scheduledTime?new Date(b.scheduledTime).getTime():Infinity;
+        return at-bt;
+      });
+      sorted.forEach(it=>{
+        if(!it.scheduledTime) return;
+        const status = activePlayers[it.id] ? 'playing' : (it.played ? 'finished' : 'upcoming');
+        const card = document.createElement('div');
+        card.className = `card dash-card ${status}`;
+        card.id = 'dash-' + it.id;
+        card.innerHTML = `
+          <div class="card-head">
+            <div>
+              <div class="title">${escapeHTML(it.fileName)}</div>
+              <div class="meta">Group: <span class="pill">${escapeHTML(it.group) || '—'}</span></div>
+              <div class="meta">Repeat: <span class="pill">${it.repeat||'none'}</span></div>
+            </div>
+            <div class="pill" style="background:#eefbf5; color:#065f46; border-color:#bbf7d0;">
+              ${status.toUpperCase()}
+            </div>
+          </div>
+          <div class="meta">Scheduled: ${new Date(it.scheduledTime).toLocaleString()}</div>
+          <div class="countdown" id="cd-dash-${it.id}">—</div>
+          <div class="dash-controls">
+            <button class="btn small ghost" onclick="openEdit(${it.id})">Edit</button>
+            <button class="btn small danger" onclick="removeItem(${it.id})">Delete</button>
+            <button class="btn small" onclick="pauseAudio(${it.id})">Pause</button>
+            <button class="btn small secondary" onclick="resumeAudio(${it.id})">Resume</button>
+            <button class="btn small danger" onclick="stopAudio(${it.id})">Stop</button>
+            <button class="btn small" onclick="previewAudio(${it.id})">Preview</button>
+          </div>
+        `;
+        dashboard.appendChild(card);
+      });
+    }
+
+    function tickCountdowns(){
+      const now = Date.now();
+      items.forEach(it=>{
+        if(!it.scheduledTime) return;
+        const tgt = new Date(it.scheduledTime).getTime();
+        const diff = tgt - now;
+        const fmt = ()=>{
+          const s = Math.max(0, Math.floor(diff/1000));
+          const h = Math.floor(s/3600);
+          const m = Math.floor((s%3600)/60);
+          const ss = s%60;
+          return `${h}h ${m}m ${ss}s`;
+        };
+        const libEl = document.getElementById('cd-lib-'+it.id);
+        const dashEl = document.getElementById('cd-dash-'+it.id);
+        if(diff>0){
+          libEl && (libEl.textContent = `⏳ Starts in ${fmt()}`);
+          dashEl && (dashEl.textContent = `⏳ Starts in ${fmt()}`);
+        }else{
+          if(activePlayers[it.id]){
+            libEl && (libEl.textContent = '▶️ Playing now');
+            dashEl && (dashEl.textContent = '▶️ Playing now');
+          }else{
+            libEl && (libEl.textContent = it.played ? '✅ Finished' : '⏰ Pending trigger…');
+            dashEl && (dashEl.textContent = it.played ? '✅ Finished' : '⏰ Pending trigger…');
+          }
+        }
+      });
+    }
+    setInterval(tickCountdowns, 1000);
+
+    const channel = new BroadcastChannel('audiva_channel');
+    function playAudio(it){
+      if(activePlayers[it.id] || it.played) return;
+      const url = URL.createObjectURL(it.blob);
+      const audio = new Audio(url);
+      activePlayers[it.id] = audio;
+      audio.play().then(()=>{
+        it.played = true; saveItem(it);
+        postStatus(it,'playing');
+        renderDashboard(); tickCountdowns();
+        toast(`Playing: ${escapeHTML(it.fileName)}`);
+      }).catch(err=>{
+        console.error(err);
+        toast('Playback blocked — user gesture may be required');
+      });
+      audio.onended = ()=>{
+        postStatus(it,'ended');
+        delete activePlayers[it.id];
+        renderDashboard(); tickCountdowns();
+      };
+    }
+    function pauseAudio(id){
+      const a = activePlayers[id]; if(!a) return;
+      a.pause(); postStatus({id, ...findItem(id)}, 'paused');
+    }
+    function resumeAudio(id){
+      const a = activePlayers[id]; if(!a) return;
+      a.play(); postStatus({id, ...findItem(id)}, 'playing');
+    }
+    function stopAudio(id){
+      const a = activePlayers[id]; if(!a) return;
+      a.pause(); a.currentTime=0; delete activePlayers[id];
+      postStatus({id, ...findItem(id)}, 'stopped');
+      renderDashboard(); tickCountdowns();
+    }
+    function findItem(id){ return items.find(x=>x.id===id) || {}; }
+
+    function openAGI(){ window.open('playing.html','_blank'); }
+    function postStatus(it,status){
+      const payload = {
+        type:'status_update',
+        status,
+        id: it.id,
+        fileName: it.fileName,
+        group: it.group,
+        scheduledTime: it.scheduledTime
+      };
+      channel.postMessage(payload);
+    }
+
+    const toastEl = document.getElementById('toast');
+    let toastTimer;
+    function toast(msg){
+      toastEl.textContent = msg;
+      toastEl.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(()=> toastEl.classList.remove('show'), 2500);
+    }
+
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+      localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+    }
+    if(localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark-mode');
+
+    let idleTimer;
+    function resetIdleTimer() {
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(()=>{
+        toast('Session idle for 10 minutes. Please interact to continue.');
+      }, 600000);
+    }
+    ['mousemove','keydown','click'].forEach(evt=>{
+      window.addEventListener(evt, resetIdleTimer);
+    });
+    resetIdleTimer();
+
+    window.addEventListener('error', function(e){
+      toast('An unexpected error occurred.');
+      console.error(e);
+    });
+    window.addEventListener('unhandledrejection', function(e){
+      toast('A promise error occurred.');
+      console.error(e);
+    });
+
+    const NAV_GUARD_WINDOW_MS = 7000;
+    function isPlaybackBusy(){
+      const playingNow = Object.keys(activePlayers).length > 0;
+      const now = Date.now();
+      const imminent = items.some(it=>{
+        if(!it || !it.scheduledTime || it.played) return false;
+        const tgt = new Date(it.scheduledTime).getTime();
+        const delta = tgt - now;
+        return (delta <= NAV_GUARD_WINDOW_MS && delta > -2000);
+      });
+      return playingNow || imminent;
+    }
+    function goHome(){
+      if(isPlaybackBusy()){
+        toast('⚠️ Cannot leave: audio is playing or about to start');
+        return;
+      }
+      window.location.href = 'home.html';
+    }
+    window.addEventListener('beforeunload', function (e) {
+      if(isPlaybackBusy()){
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+      }
+    });
+    document.addEventListener('click', (evt)=>{
+      const a = evt.target.closest('a[data-guard-leave]');
+      if(!a) return;
+      if(isPlaybackBusy()){
+        evt.preventDefault();
+        toast('⚠️ Cannot navigate away during playback/trigger window');
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Audiva Elite — Home</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="manifest" href="manifest.json" />
+  <!-- Elite font families -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Lora:ital,wght@0,400;1,700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      color: #003366;
+      font-family: "Playfair Display", system-ui, -apple-system, segoe ui, roboto, helvetica neue, arial, sans-serif;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+      background: linear-gradient(120deg, #eaf3ff 0%, #d8e6ff 50%, #b3e5fc 100%);
+      background-size: 200% 200%;
+      animation: gradientBG 12s ease-in-out infinite;
+    }
+    @keyframes gradientBG {
+      0% {background-position: 0% 50%;}
+      50% {background-position: 100% 50%;}
+      100% {background-position: 0% 50%;}
+    }
+    header {
+      background: rgba(3,51,102,0.92);
+      color: #fff;
+      padding: 16px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      box-shadow: 0 10px 35px rgba(0,0,0,.15);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .hdr-row {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      width: 100%;
+      justify-content: space-between;
+    }
+    .brand {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 900;
+      font-size: 1.5rem;
+      letter-spacing: .5px;
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+    }
+    .brand-badge {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #2ea1ff, #00d1ff);
+      color: #002244;
+      font-weight: 900;
+      font-size: 1.1rem;
+      box-shadow: 0 2px 8px rgba(46,161,255,.18);
+    }
+    .btn {
+      appearance: none;
+      border: 0;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-weight: 700;
+      cursor: pointer;
+      background: linear-gradient(135deg, #0b61ff, #5aa0ff);
+      color: #fff;
+      box-shadow: 0 8px 24px rgba(11,97,255,.25);
+      transition: .2s transform, .2s box-shadow;
+      position: relative;
+      overflow: hidden;
+      outline: none;
+      font-family: 'Montserrat', sans-serif;
+    }
+    .btn:active {
+      transform: scale(0.97);
+    }
+    .btn:focus::after {
+      content: '';
+      position: absolute;
+      left: 50%; top: 50%;
+      width: 120%; height: 120%;
+      background: rgba(11,97,255,0.12);
+      border-radius: 50%;
+      transform: translate(-50%,-50%);
+      pointer-events: none;
+      animation: ripple 0.5s linear;
+    }
+    @keyframes ripple {
+      0% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    .btn:hover {
+      transform: translateY(-1px) scale(1.04);
+      box-shadow: 0 12px 36px rgba(11,97,255,.32);
+    }
+    .btn.secondary {
+      background: #0d3566;
+      color: #cfe2ff;
+      box-shadow: none;
+    }
+    .btn.secondary:hover {
+      background: linear-gradient(135deg, #0d3566 60%, #5aa0ff 100%);
+      color: #fff;
+      box-shadow: 0 0 0 0 #5aa0ff, 0 0 18px 6px #5aa0ff;
+      animation: schedulerPulse 0.7s;
+      position: relative;
+    }
+    @keyframes schedulerPulse {
+      0% {
+        box-shadow: 0 0 0 0 #5aa0ff, 0 0 0 0 #5aa0ff;
+        transform: scale(1);
+      }
+      60% {
+        box-shadow: 0 0 18px 6px #5aa0ff, 0 0 0 0 #5aa0ff;
+        transform: scale(1.08);
+      }
+      100% {
+        box-shadow: 0 0 0 0 #5aa0ff, 0 0 18px 6px #5aa0ff;
+        transform: scale(1);
+      }
+    }
+    .btn.small {
+      padding: 6px 10px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: .88rem;
+    }
+    .btn.logout {
+      background: linear-gradient(135deg, #ff5b73, #f43f5e);
+      color: #fff;
+      font-weight: 800;
+      letter-spacing: 1px;
+      box-shadow: 0 8px 24px rgba(255,91,115,.18);
+      position: relative;
+      overflow: hidden;
+      transition: background 0.3s, box-shadow 0.3s, transform 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Montserrat', sans-serif;
+    }
+    .btn.logout svg {
+      width: 22px;
+      height: 22px;
+      vertical-align: middle;
+      fill: #fff;
+      transition: transform 0.3s;
+    }
+    .btn.logout:hover svg {
+      transform: rotate(-15deg) scale(1.15);
+      filter: drop-shadow(0 0 6px #fff);
+    }
+    .btn.logout::before {
+      content: "";
+      position: absolute;
+      left: -60%;
+      top: 0;
+      width: 220%;
+      height: 100%;
+      background: linear-gradient(120deg, #ffb6c1 0%, #ff5b73 60%, #f43f5e 100%);
+      opacity: 0.25;
+      transform: skewX(-20deg);
+      transition: left 0.4s;
+      z-index: 0;
+    }
+    .btn.logout:hover {
+      background: linear-gradient(135deg, #f43f5e 70%, #ff5b73 100%);
+      box-shadow: 0 12px 36px rgba(255,91,115,.28);
+      transform: scale(1.07) rotate(-1deg);
+    }
+    .btn.logout:hover::before {
+      left: 0;
+      opacity: 0.45;
+    }
+    .btn.logout span {
+      position: relative;
+      z-index: 1;
+      font-family: 'Montserrat', sans-serif;
+    }
+    main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px 12px 60px 12px;
+      display: grid;
+      gap: 24px;
+    }
+    section {
+      background: rgba(255,255,255,0.85);
+      border: 1px solid #d8e6ff;
+      border-radius: 22px;
+      padding: 22px 18px;
+      margin-bottom: 12px;
+      box-shadow: 0 10px 30px 0 rgba(15,60,130,.10), 0 1.5px 8px 0 rgba(11,97,255,.07);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      transition: box-shadow 0.3s;
+    }
+    section:hover {
+      box-shadow: 0 18px 48px 0 rgba(15,60,130,.18), 0 2px 12px 0 rgba(11,97,255,.12);
+    }
+    h2 {
+      margin: 0 0 10px;
+      font-size: 1.3rem;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 900;
+      letter-spacing: .03em;
+      color: #003366;
+    }
+    ul {
+      padding-left: 18px;
+    }
+    .statbar {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .stat {
+      background: linear-gradient(135deg, #eaf3ff 70%, #b3e5fc 100%);
+      border-radius: 14px;
+      padding: 12px 20px;
+      font-weight: 700;
+      color: #003366;
+      min-width: 120px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(11,97,255,.07);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1.05rem;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .stat:hover {
+      box-shadow: 0 6px 18px rgba(11,97,255,.13);
+      transform: scale(1.04);
+    }
+    .activity-log {
+      font-size: .98rem;
+      color: #204b86;
+      font-family: 'Lora', serif;
+    }
+    .activity-log li {
+      margin-bottom: 6px;
+      transition: background 0.2s;
+      border-radius: 8px;
+      padding: 2px 6px;
+    }
+    .activity-log li:hover {
+      background: #eaf3ff;
+    }
+    .help-btn {
+      float: right;
+      margin-top: -8px;
+      font-family: 'Montserrat', sans-serif;
+    }
+    .about-section {
+      background: linear-gradient(135deg, #eaf3ff 70%, #d8e6ff 100%);
+      border: 1px solid #d8e6ff;
+      border-radius: 22px;
+      padding: 32px 18px 24px 18px;
+      margin-bottom: 18px;
+      box-shadow: 0 6px 18px rgba(15,60,130,.09);
+      text-align: center;
+      position: relative;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    .about-title {
+      font-size: 2rem;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 900;
+      margin-bottom: 8px;
+      color: #003366;
+      letter-spacing: .04em;
+    }
+    .about-desc {
+      font-size: 1.08rem;
+      color: #204b86;
+      margin-bottom: 18px;
+      font-family: 'Lora', serif;
+    }
+    .quote {
+      font-size: 1.25rem;
+      font-style: italic;
+      color: #0b61ff;
+      margin-bottom: 10px;
+      margin-top: 10px;
+      font-family: 'Lora', serif;
+      font-weight: 700;
+      letter-spacing: .02em;
+    }
+    .logout-container {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      z-index: 2;
+    }
+    .scheduler-container {
+      position: absolute;
+      top: 18px;
+      left: 18px;
+      z-index: 2;
+    }
+    #welcomePopup {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0,0,0,.35);
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+    }
+    #welcomePopup .welcome-card {
+      background: rgba(255,255,255,0.98);
+      border-radius: 22px;
+      box-shadow: 0 8px 32px rgba(11,97,255,.18);
+      padding: 2.5em 2em 2em 2em;
+      max-width: 350px;
+      text-align: center;
+      position: relative;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      animation: popupFadeIn .7s cubic-bezier(.4,1.4,.6,1.0);
+    }
+    @keyframes popupFadeIn {
+      0% { opacity: 0; transform: scale(.85);}
+      80% { opacity: 1; transform: scale(1.05);}
+      100% { opacity: 1; transform: scale(1);}
+    }
+    #welcomePopup .welcome-title {
+      font-family:'Montserrat',sans-serif;
+      font-size:1.7em;
+      font-weight:900;
+      color:#0b61ff;
+      margin-bottom:10px;
+    }
+    #welcomePopup .welcome-desc {
+      font-family:'Lora',serif;
+      font-size:1.08em;
+      color:#204b86;
+      margin-bottom:18px;
+    }
+    #welcomePopup .close-btn {
+      position:absolute;
+      top:16px;
+      right:16px;
+      background:none;
+      border:none;
+      color:#003366;
+      font-size:1.3em;
+      cursor:pointer;
+      transition: color .2s;
+    }
+    #welcomePopup .close-btn:hover {
+      color:#f43f5e;
+    }
+    #audioNotifyBar {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg,#0b61ff,#5aa0ff);
+      color: #fff;
+      font-family: 'Montserrat',sans-serif;
+      font-weight: 700;
+      font-size: 1.08em;
+      padding: 14px 32px;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(11,97,255,.18);
+      z-index: 9999;
+      display: none;
+      transition: opacity .3s;
+    }
+    #enableAudioBtn {
+      background: linear-gradient(135deg, #0b61ff, #5aa0ff);
+      color: #fff;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 1.08em;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 24px;
+      margin: 18px auto 0 auto;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(11,97,255,.13);
+      transition: background .2s, box-shadow .2s, transform .2s;
+      display: block;
+    }
+    #enableAudioBtn:hover {
+      background: linear-gradient(135deg, #5aa0ff 70%, #0b61ff 100%);
+      box-shadow: 0 8px 24px rgba(11,97,255,.18);
+      transform: scale(1.04);
+    }
+    #manualPlayBtn {
+      background: linear-gradient(135deg, #0b61ff, #5aa0ff);
+      color: #fff;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 1em;
+      border: none;
+      border-radius: 10px;
+      padding: 8px 18px;
+      margin: 12px auto 0 auto;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(11,97,255,.13);
+      display: block;
+    }
+    #manualPlayBtn:hover {
+      background: linear-gradient(135deg, #5aa0ff 70%, #0b61ff 100%);
+      box-shadow: 0 8px 24px rgba(11,97,255,.18);
+      transform: scale(1.04);
+    }
+    @media (max-width: 600px) {
+      main { padding: 8px; }
+      .statbar { gap: 10px; }
+      .stat { min-width: 90px; padding: 8px 10px; }
+      .about-section { padding: 14px 6px; }
+      .about-title { font-size: 1.1rem; }
+      .logout-container { top: 8px; right: 8px; }
+      .scheduler-container { top: 8px; left: 8px; }
+      footer { font-size: .92rem; padding: 12px 0 8px 0; }
+      #welcomePopup .welcome-card { padding: 1.2em .7em 1em .7em; max-width: 95vw;}
+      #audioNotifyBar { font-size: .98em; padding: 10px 12px;}
+    }
+  </style>
+</head>
+<body>
+  <div id="welcomePopup">
+    <div class="welcome-card">
+      <button class="close-btn" onclick="closeWelcomePopup()" aria-label="Close Welcome Popup">✖</button>
+      <div class="welcome-title">Welcome!</div>
+      <div class="welcome-desc">
+        You’ve successfully logged in to <strong>Audiva Elite</strong>.<br>
+        Start scheduling your audio events or explore the dashboard!
+      </div>
+      <button class="btn secondary" onclick="closeWelcomePopup()">Get Started</button>
+      <button onclick="enableAudioPlayback()" id="enableAudioBtn">Enable Audio Playback</button>
+      <button onclick="manualPlayFirstPending()" id="manualPlayBtn">Test Manual Audio Play</button>
+    </div>
+  </div>
+  <div id="audioNotifyBar"></div>
+  <header>
+    <div class="hdr-row">
+      <div class="brand">
+        <div class="brand-badge" aria-hidden="true">Audiva</div>
+        <span>Elite Home</span>
+      </div>
+      <button class="btn logout" onclick="logoutAudiva()" title="Logout">
+        <svg viewBox="0 0 24 24">
+          <path d="M16 13v-2H7V8l-5 4 5 4v-3h9zm3-10H5c-1.1 0-2 .9-2 2v6h2V5h14v14H5v-6H3v6c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
+        </svg>
+        <span>Logout</span>
+      </button>
+    </div>
+  </header>
+  <main>
+    <section class="about-section">
+      <div class="scheduler-container">
+        <button class="btn secondary" onclick="window.location.href='index.html'">Go to Scheduler</button>
+      </div>
+      <div class="about-title">Welcome to Audiva Elite</div>
+      <div class="quote">“The right sound at the right time can change everything.”</div>
+      <div class="about-desc">
+        Audiva Elite is your offline audio scheduling companion. Effortlessly organize, schedule, and play your audio files exactly when you need them. 
+        <br /><br />
+        <strong>Key Features:</strong>
+        <ul style="text-align:left;display:inline-block;max-width:500px;">
+          <li>Upload and schedule audio files for automatic playback.</li>
+          <li>Repeat schedules: daily or weekly triggers.</li>
+          <li>Preview audio before scheduling.</li>
+          <li>Export and import your audio library for backup.</li>
+          <li>Real-time dashboard for upcoming and played events.</li>
+          <li>Browser notifications for reminders.</li>
+          <li>Accessible, fast, and works offline.</li>
+        </ul>
+      </div>
+    </section>
+    <section>
+      <h2>📊 Dashboard Overview</h2>
+      <div class="statbar" id="statbar">
+        <div style="width:100%;text-align:center;"><span style="font-size:1.2rem;color:#0b61ff;">Loading...</span></div>
+      </div>
+    </section>
+    <section>
+      <h2>⏰ Upcoming Audio Events</h2>
+      <ul id="upcomingList"></ul>
+    </section>
+    <section>
+      <h2>📝 Recent Activity</h2>
+      <ul class="activity-log" id="activityLog"></ul>
+      <button class="btn small help-btn" onclick="showHelp()">Help & FAQ</button>
+    </section>
+    <div id="helpModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,.5);z-index:100;align-items:center;justify-content:center;">
+      <div style="background:#fff;color:#222;padding:2em;border-radius:1em;max-width:500px;position:relative;">
+        <button onclick="hideHelp()" style="position:absolute;top:10px;right:10px;">✖</button>
+        <h2>Help & FAQ</h2>
+        <ul>
+          <li>Upload audio files (MP3/WAV/M4A) and schedule playback.</li>
+          <li>Use Export/Import to backup or restore your library.</li>
+          <li>Preview audio before scheduling.</li>
+          <li>Set repeat schedules for daily/weekly playback.</li>
+          <li>Enable browser notifications for reminders.</li>
+          <li>Change language and theme from the menu.</li>
+          <li>Advanced features (login/cloud sync) require backend.</li>
+        </ul>
+      </div>
+    </div>
+  </main>
+  <footer>
+    &copy; 2025 Audiva Elite &mdash; All rights reserved. | Version 1.0.0
+    <br>
+    <a href="changelog.html" style="color:#cfe2ff;text-decoration:underline;">Changelog</a> &nbsp;|&nbsp;
+    <a href="mailto:support@audiva.com" style="color:#cfe2ff;text-decoration:underline;">Contact Support</a>
+  </footer>
+  <script>
+    let db;
+    const DB_NAME="audivaDB_elite", STORE="files";
+    const openReq = indexedDB.open(DB_NAME, 2);
+    openReq.onsuccess = e => {
+      db = e.target.result;
+      loadStats();
+      loadUpcoming();
+      loadActivity();
+    };
+
+    window.addEventListener('DOMContentLoaded', function() {
+      if (!sessionStorage.getItem('welcomeShown')) {
+        document.getElementById('welcomePopup').style.display = 'flex';
+        sessionStorage.setItem('welcomeShown', '1');
+      }
+    });
+
+    function closeWelcomePopup() {
+      document.getElementById('welcomePopup').style.display = 'none';
+    }
+
+    function loadStats() {
+      const statbar = document.getElementById('statbar');
+      const tx = db.transaction(STORE, 'readonly');
+      tx.objectStore(STORE).getAll().onsuccess = e => {
+        const items = e.target.result || [];
+        statbar.innerHTML = `
+          <div class="stat" id="stat-total">Total: ${items.length}</div>
+          <div class="stat" id="stat-scheduled">Scheduled: ${items.filter(it=>it.scheduledTime).length}</div>
+          <div class="stat" id="stat-played">Played: ${items.filter(it=>it.played).length}</div>
+          <div class="stat" id="stat-upcoming">Upcoming: ${items.filter(it=>it.scheduledTime && !it.played).length}</div>
+        `;
+      };
+    }
+
+    function loadUpcoming() {
+      const tx = db.transaction(STORE, 'readonly');
+      tx.objectStore(STORE).getAll().onsuccess = e => {
+        const items = (e.target.result || [])
+          .filter(it=>it.scheduledTime && !it.played)
+          .sort((a,b)=>new Date(a.scheduledTime)-new Date(b.scheduledTime))
+          .slice(0,3);
+        const ul = document.getElementById('upcomingList');
+        ul.innerHTML = items.length ? items.map(it=>`<li>
+          <strong>${it.fileName}</strong> (${it.group})<br>
+          <small>${new Date(it.scheduledTime).toLocaleString()}</small>
+        </li>`).join('') : '<li>No upcoming events.</li>';
+      };
+    }
+
+    function loadActivity() {
+      const tx = db.transaction(STORE, 'readonly');
+      tx.objectStore(STORE).getAll().onsuccess = e => {
+        const items = (e.target.result || [])
+          .sort((a,b)=>b.createdAt-a.createdAt)
+          .slice(0,5);
+        const ul = document.getElementById('activityLog');
+        ul.innerHTML = items.length ? items.map(it=>`<li>
+          <strong>${it.fileName}</strong> (${it.group || '—'})<br>
+          <small>${it.played ? 'Played' : (it.scheduledTime ? 'Scheduled' : 'Unscheduled')} — ${new Date(it.createdAt).toLocaleString()}</small>
+        </li>`).join('') : '<li>No recent activity.</li>';
+      };
+    }
+
+    function escapeHTML(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function showHelp() { document.getElementById('helpModal').style.display='flex'; }
+    function hideHelp() { document.getElementById('helpModal').style.display='none'; }
+
+    function logoutAudiva() {
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.href = "login.html";
+    }
+
+    function showAudioNotification(msg) {
+      const bar = document.getElementById('audioNotifyBar');
+      bar.textContent = msg;
+      bar.style.display = 'block';
+      bar.style.opacity = '1';
+      setTimeout(() => {
+        bar.style.opacity = '0';
+        setTimeout(() => { bar.style.display = 'none'; }, 400);
+      }, 3500);
+    }
+
+    let audioEnabled = false;
+    function enableAudioPlayback() {
+      audioEnabled = true;
+      document.getElementById('enableAudioBtn').style.display = 'none';
+      // Play a short silent audio to unlock autoplay in browsers
+      let unlockAudio = new Audio();
+      unlockAudio.src = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=";
+      unlockAudio.play();
+      showAudioNotification('Audio playback enabled!');
+    }
+
+    function manualPlayFirstPending() {
+      if (!db) return;
+      const tx = db.transaction(STORE, 'readonly');
+      tx.objectStore(STORE).getAll().onsuccess = function(e) {
+        const items = e.target.result || [];
+        const item = items.find(it =>
+          it.scheduledTime &&
+          !it.played &&
+          new Date(it.scheduledTime).getTime() <= Date.now() &&
+          it.fileData
+        );
+        if (item) {
+          let audio;
+          if (item.fileData instanceof Blob) {
+            audio = new Audio(URL.createObjectURL(item.fileData));
+          } else {
+            audio = new Audio(item.fileData);
+          }
+          audio.play();
+          showAudioNotification(`Manual Play: ${item.fileName}`);
+        } else {
+          showAudioNotification('No pending audio to play.');
+        }
+      };
+    }
+
+    setInterval(function() {
+      if (!db) return;
+      const tx = db.transaction(STORE, 'readonly');
+      tx.objectStore(STORE).getAll().onsuccess = function(e) {
+        const now = Date.now();
+        const items = e.target.result || [];
+        items.forEach(function(item) {
+          if (
+            item.scheduledTime &&
+            !item.played &&
+            new Date(item.scheduledTime).getTime() <= now &&
+            item.fileData
+          ) {
+            if (audioEnabled) {
+              let audio;
+              if (item.fileData instanceof Blob) {
+                audio = new Audio(URL.createObjectURL(item.fileData));
+              } else {
+                audio = new Audio(item.fileData);
+              }
+              audio.play();
+              showAudioNotification(`Playing: ${item.fileName}`);
+            } else {
+              showAudioNotification('Click "Enable Audio Playback" to allow scheduled audio.');
+            }
+            const tx2 = db.transaction(STORE, 'readwrite');
+            const store = tx2.objectStore(STORE);
+            item.played = true;
+            store.put(item);
+          }
+        });
+      };
+    }, 30000);
+
+  </script>
+</body>
+</html>
